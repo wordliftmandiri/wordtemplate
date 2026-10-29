@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pembuat Invoice – Usaha Mandiri Lift</title>
+<style>
+:root{--bg:#f6f6f3;--card:#fff;--tx:#1d1d1b;--mut:#6b6b66;--bd:#d6d6cf;--ac:#1f6f43;--acx:#fff;--warn:#8a5200;--warnbg:#fff3d6;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#161614;--card:#222220;--tx:#eeeeea;--mut:#a3a39c;--bd:#3b3b37;--ac:#5cc48a;--acx:#0d2a1a;--warn:#f0b866;--warnbg:#3a2c12;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#161614;--card:#222220;--tx:#eeeeea;--mut:#a3a39c;--bd:#3b3b37;--ac:#5cc48a;--acx:#0d2a1a;--warn:#f0b866;--warnbg:#3a2c12;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:780px;margin:0 auto;padding:18px 14px 40px}
+h1{font-size:22px;margin:4px 0 2px}
+.sub{color:var(--mut);margin:0 0 14px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:14px;margin-bottom:12px}
+h2{font-size:14px;margin:0 0 10px;text-transform:uppercase;letter-spacing:.04em;color:var(--mut)}
+.kode{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.kode label{position:relative;border:1px solid var(--bd);border-radius:10px;padding:10px;cursor:pointer;display:block}
+.kode input{position:absolute;opacity:0;pointer-events:none}
+.kode label:has(input:checked){border-color:var(--ac);box-shadow:0 0 0 2px var(--ac) inset}
+.kode b{display:block;font-size:17px}
+.kode span{color:var(--mut);font-size:13px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.grid .w{grid-column:1/-1}
+label.f{display:block;font-size:13px;color:var(--mut)}
+input{width:100%;font:inherit;color:var(--tx);background:transparent;border:1px solid var(--bd);border-radius:8px;padding:8px 9px;margin-top:3px}
+input:focus{outline:2px solid var(--ac);outline-offset:-1px}
+.r{text-align:right}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;min-width:560px}
+th{font-size:12px;color:var(--mut);text-align:left;padding:0 4px 4px}
+td{padding:3px 4px;vertical-align:middle}
+td.n{width:24px;color:var(--mut)}
+td.r{white-space:nowrap}
+td input{margin:0}
+.x{border:1px solid var(--bd);background:transparent;color:var(--mut);border-radius:8px;width:32px;height:34px;cursor:pointer}
+.sum{display:grid;grid-template-columns:1fr auto;gap:4px 12px;max-width:420px;margin-left:auto}
+.sum .t{font-weight:700;font-size:17px}
+.terb{margin:10px 0 0;font-style:italic}
+.warn{background:var(--warnbg);color:var(--warn);border-radius:8px;padding:8px 10px;margin-top:10px;font-size:14px}
+.btns{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+button.p{background:var(--ac);color:var(--acx);border:0;border-radius:10px;padding:12px 18px;font:inherit;font-weight:700;cursor:pointer}
+button.s{background:transparent;color:var(--tx);border:1px solid var(--bd);border-radius:10px;padding:10px 12px;font:inherit;cursor:pointer}
+#st{color:var(--mut);font-size:14px;margin:8px 0 0;min-height:1.4em}
+.note{color:var(--mut);font-size:13px;margin-top:6px}
+@media (max-width:520px){.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<main>
+<h1>Pembuat Invoice</h1>
+<p class="sub">Usaha Mandiri Lift · pilih kode, periksa isiannya, lalu unduh sebagai Word.</p>
+
+<section class="card">
+<h2>1. Kode invoice</h2>
+<div class="kode" id="kode"></div>
+</section>
+
+<section class="card">
+<h2>2. Data invoice</h2>
+<div class="grid">
+<label class="f">Tanggal invoice<input type="date" id="tgl"></label>
+<label class="f">Nomor invoice<input id="no" inputmode="numeric"></label>
+<label class="f w">Kode PO<input id="po"></label>
+<label class="f">Tanggal PO<input type="date" id="tpo"></label>
+<label class="f">Jatuh tempo<input type="date" id="jt"></label>
+</div>
+<div class="warn" id="warn" hidden></div>
+</section>
+
+<section class="card">
+<h2>3. Barang</h2>
+<div class="scroll"><table>
+<thead><tr><th></th><th>Nama</th><th style="width:80px">Jumlah</th><th style="width:130px">Harga (Rp)</th><th class="r" style="width:120px;text-align:right">Total (Rp)</th><th></th></tr></thead>
+<tbody id="rows"></tbody>
+</table></div>
+<div class="grid" style="margin-top:10px"><label class="f">Potongan harga (Rp)<input id="pot" inputmode="numeric" class="r"></label></div>
+<p class="note">Baris yang namanya kosong dicetak sebagai baris kosong (0 / Pcs / 0 / -).</p>
+</section>
+
+<section class="card">
+<h2>4. Ringkasan</h2>
+<div class="sum">
+<span>Sub total</span><span class="r" id="sSub"></span>
+<span>PPN 11%</span><span class="r" id="sPpn"></span>
+<span class="t">Total</span><span class="r t" id="sTot"></span>
+</div>
+<p class="terb" id="sTer"></p>
+</section>
+
+<div class="btns">
+<button class="p" id="unduh" type="button">Unduh invoice (.docx)</button>
+<button class="s" id="simpan" type="button">Simpan sebagai bawaan kode ini</button>
+<button class="s" id="reset" type="button">Kembalikan bawaan awal</button>
+</div>
+<p id="st" role="status"></p>
+<p class="note">Bawaan yang Anda simpan hanya tersimpan di browser ini. Semua data diproses di perangkat Anda, tidak dikirim ke server.</p>
+</main>
+
+<script src="vendor/pizzip.min.js"></script>
+<script src="vendor/docxtemplater.js"></script>
+<script>
+const PRESETS = {
+  1: { kode_po: "185/PPK.10/DIRI-BRIN/PO/6/2026", tpo: "2026-06-02", jt: "2026-09-11", pot: 0,
+       barang: [ {nama:"Service berkala lift Pillar 1 Agustus", qty:1, harga:2500000},
+                 {nama:"Service berkala lift Pillar 2 Agustus", qty:1, harga:2500000} ] },
+  2: { kode_po: "310/PPK.10/DIRI-BRIN/PO/7/2026", tpo: "2026-07-14", jt: "2026-10-14", pot: 0,
+       barang: [ {nama:"Service berkala lift non otis 2 lantai", qty:3, harga:1000000},
+                 {nama:"Service berkala lift non otis 2 lantai 3000kg", qty:1, harga:1200000},
+                 {nama:"Service berkala lift non otis 3 lantai", qty:2, harga:1500000} ] },
+  3: { kode_po: "467/PPK.10/DIRI-BRIN/PO/9/2026", tpo: "2026-09-14", jt: "2026-10-14", pot: 0,
+       barang: [ {nama:"Service berkala lift Hyunday September", qty:1, harga:2500000} ] }
+};
+const BLN = ["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
+const $ = id => document.getElementById(id);
+const rp = n => String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+const num = s => Number(String(s).replace(/\D/g, "")) || 0;
+const tgl = iso => { if (!iso) return ""; const [y, m, d] = iso.split("-").map(Number); return d + " " + BLN[m - 1] + " " + y; };
+
+const SAT = ["", "Ribu", "Juta", "Miliar", "Triliun"];
+const A = ["", "Satu", "Dua", "Tiga", "Empat", "Lima", "Enam", "Tujuh", "Delapan", "Sembilan", "Sepuluh", "Sebelas"];
+function tiga(n) {
+  const s = [], r = Math.floor(n / 100), t = n % 100;
+  if (r === 1) s.push("Seratus"); else if (r > 1) s.push(A[r], "Ratus");
+  if (t < 12) { if (t > 0) s.push(A[t]); }
+  else if (t < 20) s.push(A[t - 10], "Belas");
+  else { s.push(A[Math.floor(t / 10)], "Puluh"); if (t % 10) s.push(A[t % 10]); }
+  return s;
+}
+function terbilang(n) {
+  if (n === 0) return "Nol Rupiah";
+  const parts = []; let i = 0;
+  while (n > 0) {
+    const g = n % 1000; n = Math.floor(n / 1000);
+    if (g) {
+      if (i === 1 && g === 1) parts.unshift("Seribu");
+      else parts.unshift(...tiga(g).concat(SAT[i] ? [SAT[i]] : []));
+    }
+    i++;
+  }
+  return parts.join(" ") + " Rupiah";
+}
+function hitung(barang, pot) {
+  const sub = barang.filter(b => b.nama).reduce((a, b) => a + b.qty * b.harga, 0) - pot;
+  const ppn = Math.round(sub * 0.11);
+  return { sub, ppn, total: sub + ppn };
+}
+
+// ---------- form ----------
+let manualNo = false;
+const kodeBox = $("kode");
+[1, 2, 3].forEach(k => {
+  const h = hitung(PRESETS[k].barang, 0);
+  kodeBox.insertAdjacentHTML("beforeend",
+    '<label><input type="radio" name="kode" value="' + k + '"' + (k === 1 ? " checked" : "") + '><b>Kode ' + k + '</b><span>Rp ' + rp(h.total) + '</span></label>');
+});
+const tb = $("rows");
+for (let i = 0; i < 5; i++) {
+  tb.insertAdjacentHTML("beforeend",
+    '<tr><td class="n">' + (i + 1) + '</td>' +
+    '<td><input id="nm' + i + '" placeholder="Nama barang"></td>' +
+    '<td><input id="q' + i + '" inputmode="numeric" class="r"></td>' +
+    '<td><input id="h' + i + '" inputmode="numeric" class="r"></td>' +
+    '<td class="r" id="t' + i + '">-</td>' +
+    '<td><button class="x" type="button" data-i="' + i + '" aria-label="Kosongkan baris ' + (i + 1) + '">✕</button></td></tr>');
+}
+const kodeAktif = () => Number(document.querySelector('input[name="kode"]:checked').value);
+const store = k => { try { return JSON.parse(localStorage.getItem("inv-bawaan-" + k)); } catch (e) { return null; } };
+
+function autoNo() {
+  const iso = $("tgl").value;
+  if (!manualNo && iso) $("no").value = iso.slice(2, 4) + iso.slice(5, 7) + iso.slice(8, 10) + kodeAktif();
+}
+function isi(p) {
+  $("po").value = p.kode_po; $("tpo").value = p.tpo; $("jt").value = p.jt;
+  $("pot").value = p.pot ? rp(p.pot) : "";
+  for (let i = 0; i < 5; i++) {
+    const b = p.barang[i];
+    $("nm" + i).value = b ? b.nama : "";
+    $("q" + i).value = b ? b.qty : "";
+    $("h" + i).value = b ? rp(b.harga) : "";
+  }
+}
+function baca() {
+  const barang = [];
+  for (let i = 0; i < 5; i++) barang.push({ nama: $("nm" + i).value.trim(), qty: num($("q" + i).value), harga: num($("h" + i).value) });
+  return { kode_po: $("po").value.trim(), tpo: $("tpo").value, jt: $("jt").value, pot: num($("pot").value), barang };
+}
+function cekPO() {
+  const p = $("po").value.split("/"), bln = Number(p[p.length - 2]), m = $("tpo").value ? Number($("tpo").value.slice(5, 7)) : 0, w = $("warn");
+  if (p.length > 1 && bln && m && bln !== m) {
+    w.hidden = false;
+    w.textContent = "Bulan di kode PO (" + bln + ") tidak sama dengan bulan Tanggal PO (" + BLN[m - 1] + "). Periksa lagi.";
+  } else w.hidden = true;
+}
+function ringkas() {
+  const f = baca();
+  f.barang.forEach((b, i) => { $("t" + i).textContent = b.nama ? rp(b.qty * b.harga) : "-"; });
+  const h = hitung(f.barang, f.pot);
+  $("sSub").textContent = "Rp " + rp(h.sub); $("sPpn").textContent = "Rp " + rp(h.ppn); $("sTot").textContent = "Rp " + rp(h.total);
+  $("sTer").textContent = "Terbilang: " + terbilang(h.total);
+  cekPO();
+  return { f, h };
+}
+function muat() { isi(store(kodeAktif()) || PRESETS[kodeAktif()]); manualNo = false; autoNo(); ringkas(); }
+
+// ---------- dokumen ----------
+function dataDokumen() {
+  const { f, h } = ringkas(), d = {
+    no_invoice: $("no").value.trim(), tanggal: tgl($("tgl").value), kode_po: f.kode_po,
+    tanggal_po: tgl(f.tpo), jatuh_tempo: tgl(f.jt)
+  };
+  f.barang.forEach((b, i) => {
+    const n = i + 1;
+    if (b.nama) { d["nama" + n] = b.nama; d["qty" + n] = String(b.qty); d["harga" + n] = rp(b.harga); d["total" + n] = rp(b.qty * b.harga); }
+    else { d["nama" + n] = "0"; d["qty" + n] = "0"; d["harga" + n] = "-"; d["total" + n] = "-"; }
+  });
+  d.potongan = f.pot ? rp(f.pot) : "-";
+  d.subtotal = rp(h.sub); d.ppn = rp(h.ppn); d.total = rp(h.total); d.terbilang = terbilang(h.total);
+  return d;
+}
+const status = t => { $("st").textContent = t; };
+async function unduh() {
+  const d = dataDokumen();
+  if (!d.no_invoice || !d.tanggal) { status("Isi dulu tanggal dan nomor invoice."); return; }
+  try {
+    const res = await fetch("template-invoice.docx", { cache: "no-cache" });
+    if (!res.ok) throw new Error("template-invoice.docx tidak ditemukan. Buka halaman lewat alamat https GitHub Pages, bukan dengan klik dua kali berkas.");
+    const zip = new PizZip(await res.arrayBuffer());
+    const doc = new docxtemplater(zip, { paragraphLoop: true, linebreaks: true });
+    doc.render(d);
+    const blob = doc.getZip().generate({ type: "blob", mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" });
+    const nama = "Invoice " + d.no_invoice + ".docx";
+    let dl = null;
+    try { dl = window.claude && window.claude.use ? await window.claude.use("downloads") : null; } catch (e) { dl = null; }
+    if (dl) { await dl.save({ filename: nama, data: blob }); status("Invoice " + d.no_invoice + " siap disimpan."); }
+    else {
+      const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = nama;
+      document.body.appendChild(a); a.click(); a.remove(); status("Invoice " + d.no_invoice + " diunduh.");
+    }
+  } catch (e) {
+    status(e && e.code === "declined" ? "Penyimpanan dibatalkan." : "Gagal membuat dokumen: " + (e && e.message ? e.message : e));
+  }
+}
+
+// ---------- event ----------
+kodeBox.addEventListener("change", muat);
+$("tgl").addEventListener("input", () => { manualNo = false; autoNo(); });
+$("no").addEventListener("input", () => { manualNo = true; });
+document.querySelectorAll("main input").forEach(el => {
+  if (el.name === "kode") return;
+  el.addEventListener("input", ringkas);
+});
+["pot"].concat([0, 1, 2, 3, 4].map(i => "h" + i)).forEach(id => $(id).addEventListener("blur", e => { const v = num(e.target.value); e.target.value = v ? rp(v) : ""; ringkas(); }));
+tb.addEventListener("click", e => {
+  const b = e.target.closest(".x"); if (!b) return;
+  const i = b.dataset.i; $("nm" + i).value = ""; $("q" + i).value = ""; $("h" + i).value = ""; ringkas();
+});
+$("unduh").addEventListener("click", unduh);
+$("simpan").addEventListener("click", () => {
+  try { localStorage.setItem("inv-bawaan-" + kodeAktif(), JSON.stringify(baca())); status("Isian disimpan sebagai bawaan Kode " + kodeAktif() + "."); }
+  catch (e) { status("Penyimpanan di browser ini tidak tersedia."); }
+});
+$("reset").addEventListener("click", () => {
+  try { localStorage.removeItem("inv-bawaan-" + kodeAktif()); } catch (e) {}
+  muat(); status("Kembali ke bawaan awal Kode " + kodeAktif() + ".");
+});
+
+const now = new Date(), p2 = n => String(n).padStart(2, "0");
+$("tgl").value = now.getFullYear() + "-" + p2(now.getMonth() + 1) + "-" + p2(now.getDate());
+muat();
+</script>
+</body>
+</html>
