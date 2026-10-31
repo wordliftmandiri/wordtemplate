@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1f6f43">
+<title>Pembuat Invoice · Usaha Mandiri Lift</title>
+<style>
+  :root{
+    --bg:#f5f5f1; --card:#fff; --ink:#1b1f1c; --muted:#66706a; --line:#dfe3de; --field:#fff;
+    --brand:#1f6f43; --brand-ink:#fff; --sel:#1f6f43; --soft:#eef3ee; --danger:#b3261e; --radius:16px;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --bg:#101411; --card:#181e1a; --ink:#e8eee9; --muted:#9aa89f; --line:#2b362e; --field:#121713;
+           --brand:#43b97a; --brand-ink:#08150d; --sel:#43b97a; --soft:#1e2a21; --danger:#f2b8b5; }
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+  .wrap{max-width:880px;margin:0 auto;padding:22px 16px calc(40px + env(safe-area-inset-bottom))}
+  h1{margin:0;font-size:1.6rem;letter-spacing:.1px}
+  .sub{margin:4px 0 14px;color:var(--muted)}
+  .nav{display:flex;gap:8px;margin:0 0 18px}.nav a{padding:9px 16px;border:1px solid var(--line);border-radius:999px;color:var(--ink);text-decoration:none;background:var(--card)}.nav a.on{background:var(--brand);border-color:var(--brand);color:var(--brand-ink);font-weight:700}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:20px;margin:0 0 16px}
+  .card h2{margin:0 0 14px;font-size:.88rem;letter-spacing:.8px;text-transform:uppercase;color:var(--muted)}
+  label{display:block;font-size:.86rem;color:var(--muted);margin:0 0 5px}
+  input{width:100%;font:inherit;color:inherit;background:var(--field);border:1px solid var(--line);border-radius:10px;padding:10px 12px;min-height:46px}
+  input:focus{outline:2px solid var(--sel);outline-offset:1px}
+  input.r{text-align:right}
+  .g2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .g1{display:grid;grid-template-columns:1fr;gap:14px;margin-top:14px}
+  .g2+.g1,.g1+.g2,.g2+.g2{margin-top:14px}
+  @media(max-width:520px){ .g2{grid-template-columns:1fr} }
+
+  .kode{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+  @media(max-width:620px){ .kode{grid-template-columns:1fr 1fr} }
+  .kode button{text-align:left;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;font:inherit;color:inherit;cursor:pointer;min-height:76px}
+  .kode button b{display:block;font-size:1.15rem}
+  .kode button span{color:var(--muted);font-size:.92rem}
+  .kode button.on{border:2px solid var(--sel);padding:13px 15px}
+
+  .hd,.it{display:grid;grid-template-columns:22px minmax(0,1fr) 72px 124px 112px 44px;gap:10px;align-items:center}
+  .hd{font-size:.82rem;font-weight:600;color:var(--muted);margin-bottom:6px}
+  .hd .r,.tot{text-align:right}
+  .it{margin-bottom:10px}
+  .it .n{color:var(--muted)}
+  .it .tot{font-variant-numeric:tabular-nums}
+  .x{width:44px;min-width:44px;padding:0;border:1px solid var(--line);background:var(--card);border-radius:10px;height:44px;font-size:1.1rem;color:var(--muted);cursor:pointer}
+  @media(max-width:620px){
+    .hd{display:none}
+    .it{grid-template-columns:22px 1fr 1fr 44px;grid-template-areas:"n nama nama x" ". qty harga ." ". tot tot .";
+        border:1px solid var(--line);border-radius:12px;padding:10px;margin-bottom:10px;gap:8px}
+    .it .n{grid-area:n}.it .nama{grid-area:nama}.it .qty{grid-area:qty}.it .harga{grid-area:harga}.it .tot{grid-area:tot}.it .x{grid-area:x}
+    .it .tot::before{content:"Total: ";color:var(--muted)}
+  }
+  .note{color:var(--muted);font-size:.86rem;margin:6px 0 0}
+  .sum{display:grid;grid-template-columns:1fr auto;gap:6px 24px;max-width:420px;margin-left:auto}
+  .sum div:nth-child(even){text-align:right;font-variant-numeric:tabular-nums}
+  .sum .big{font-weight:800;font-size:1.15rem}
+  .tb{font-style:italic;margin:14px 0 0}
+  .row{display:flex;gap:10px;flex-wrap:wrap}
+  button.btn{font:inherit;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:12px;padding:0 20px;min-height:48px;cursor:pointer}
+  button.pri{background:var(--brand);border-color:var(--brand);color:var(--brand-ink);font-weight:700}
+  button.btn[disabled]{opacity:.6}
+  details.card summary{cursor:pointer;font-weight:600}
+  details.card[open] summary{margin-bottom:14px}
+  .foot{color:var(--muted);font-size:.86rem;margin-top:18px}
+  #toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translateX(-50%);background:#222;color:#fff;padding:11px 18px;border-radius:10px;
+         font-size:.92rem;opacity:0;pointer-events:none;transition:opacity .2s;z-index:9;max-width:92vw;text-align:center}
+  #toast.on{opacity:1} #toast.err{background:var(--danger);color:#fff}
+  @media(max-width:620px){ .actions{position:sticky;bottom:0;background:var(--bg);padding:10px 0 calc(10px + env(safe-area-inset-bottom));margin:0 -4px;z-index:5} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Pembuat Invoice</h1>
+  <p class="sub">Usaha Mandiri Lift · pilih kode, periksa isiannya, lalu unduh sebagai Word.</p>
+
+  <nav class="nav"><a class="on" href="index.html">Invoice</a><a href="service-report.html">Service report</a></nav>
+
+  <section class="card"><h2>1. Kode invoice</h2><div class="kode" id="kode"></div></section>
+
+  <section class="card"><h2>2. Data invoice</h2><div id="data"></div></section>
+
+  <section class="card"><h2>3. Barang</h2>
+    <div class="hd"><span></span><span>Nama</span><span class="r">Jumlah</span><span class="r">Harga (Rp)</span><span class="r">Total (Rp)</span><span></span></div>
+    <div id="items"></div>
+    <div class="g2" style="margin-top:14px"><div><label>Potongan harga (Rp)</label><input id="pot" class="r" inputmode="numeric" placeholder="0"></div></div>
+    <p class="note">Baris yang namanya kosong dicetak sebagai baris kosong (0 / Pcs / 0 / -).</p>
+  </section>
+
+  <section class="card"><h2>4. Ringkasan</h2>
+    <div class="sum">
+      <div>Sub total</div><div id="sSub"></div>
+      <div id="sPpnL">PPN 11%</div><div id="sPpn"></div>
+      <div class="big">Total</div><div class="big" id="sTot"></div>
+    </div>
+    <p class="tb" id="sTb"></p>
+  </section>
+
+  <div class="actions row">
+    <button class="btn pri" id="bDl">Unduh invoice (.docx)</button>
+    <button class="btn" id="bShare" hidden>Bagikan</button>
+  </div>
+  <div class="row" style="margin-top:10px">
+    <button class="btn" id="bSave">Simpan sebagai bawaan kode ini</button>
+    <button class="btn" id="bReset">Kembalikan bawaan awal</button>
+  </div>
+
+  <details class="card" style="margin-top:16px"><summary>Penerima &amp; pengaturan umum</summary>
+    <div class="g1" style="margin-top:0"><div><label>Kepada</label><input id="u_kepada"></div>
+    <div><label>Alamat baris 1</label><input id="u_alamat1"></div>
+    <div><label>Alamat baris 2</label><input id="u_alamat2"></div></div>
+    <div class="g2"><div><label>Keterangan</label><input id="u_keterangan"></div><div><label>PPN (%)</label><input id="u_ppn" inputmode="decimal"></div></div>
+  </details>
+
+  <p class="foot">Bawaan yang Anda simpan hanya tersimpan di browser ini. Semua data diproses di perangkat Anda, tidak dikirim ke server.</p>
+</div>
+<div id="toast" role="status"></div>
+<datalist id="dl"></datalist>
+
+<script src="jszip.min.js"></script>
+<script src="templates.js"></script>
+<script src="docgen.js"></script>
+<script>
+(function(){
+  'use strict';
+  var G = window.DocGen;
+  var $ = function(id){ return document.getElementById(id); };
+  var K_SAVED='umlift.inv.bawaan.v1', K_UMUM='umlift.inv.umum.v1', K_HIST='umlift.inv.hist.v1';
+  function lsGet(k){ try{ return JSON.parse(localStorage.getItem(k)); }catch(e){ return null; } }
+  function lsSet(k,v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+  function clone(o){ return JSON.parse(JSON.stringify(o)); }
+  function today(){ var d=new Date(),p=function(n){return ('0'+n).slice(-2)}; return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate()); }
+
+  /* ---------- bawaan awal: diambil dari 3 invoice asli ---------- */
+  function it(nama,qty,harga){ return {nama:nama,satuan:'Pcs',qty:String(qty),harga:String(harga)}; }
+  var FACTORY = {
+    1:{noPO:'185/PPK.10/DIRI-BRIN/PO/6/2026', tglPO:'2026-06-02', jatuhTempo:'2026-09-11', jtManual:true, potongan:'',
+       items:[it('Service berkala lift Pillar 1 Agustus',1,2500000), it('Service berkala lift Pillar 2 Agustus',1,2500000)]},
+    2:{noPO:'310/PPK.10/DIRI-BRIN/PO/7/2026', tglPO:'2026-07-14', jatuhTempo:'2026-10-14', jtManual:true, potongan:'',
+       items:[it('Service berkala lift non otis 2 lantai',3,1000000), it('Service berkala lift non otis 2 lantai 3000kg',1,1200000), it('Service berkala lift non otis 3 lantai',2,1500000)]},
+    3:{noPO:'467/PPK.10/DIRI-BRIN/PO/9/2026', tglPO:'2026-09-14', jatuhTempo:'2026-10-14', jtManual:true, potongan:'',
+       items:[it('Service berkala lift Hyunday September',1,2500000)]},
+    4:{noPO:'', tglPO:'', jatuhTempo:'', jtManual:false, potongan:'', items:[]}
+  };
+  var UMUM0 = {kepada:'DEPUTI BIDANG STRUKTUR RISET DAN INOVASI BRIN',
+    alamat1:'Gd. B.J Habibie Lt.14. Jl. Kp. Bali XXXIV No. 15 8, RT 10/RW 10 Kp Bali',
+    alamat2:'Kecamatan Tanah Abang, Kota Jakarta Pusat', keterangan:'Service berkala', ppn:'11'};
+
+  function norm(d){ // pastikan 5 baris
+    d=clone(d); d.noManual=d.noManual||''; d.items=d.items||[];
+    while(d.items.length<5) d.items.push({nama:'',satuan:'Pcs',qty:'',harga:''});
+    d.items=d.items.slice(0,5); return d;
+  }
+  var saved = lsGet(K_SAVED) || {};
+  var umum = Object.assign({}, UMUM0, lsGet(K_UMUM)||{});
+  var hist = lsGet(K_HIST) || {};
+  var work = {};
+  function base(k){ return saved[k] || FACTORY[k]; }
+  [1,2,3,4].forEach(function(k){ work[k]=norm(base(k)); });
+  var kode = 1, tanggal = today();
+
+  /* ---------- helpers ---------- */
+  var toastT;
+  function toast(m, err){ var t=$('toast'); t.textContent=m; t.className='on'+(err?' err':''); clearTimeout(toastT); toastT=setTimeout(function(){t.className='';}, err?4500:2500); }
+  function money(el){ var d=el.value.replace(/\D/g,''); el.value=d?G.rp(+d):''; return d; }
+  function mk(tag,cls,attrs){ var e=document.createElement(tag); if(cls) e.className=cls; if(attrs) for(var k in attrs) e.setAttribute(k,attrs[k]); return e; }
+  function lab(t, input){ var d=mk('div'); var l=mk('label'); l.textContent=t; d.appendChild(l); d.appendChild(input); return d; }
+  function auto(){ return G.nomorInvoice(tanggal, kode); }
+  function dataNow(){
+    var w=work[kode];
+    return {noInvoice:w.noManual||auto(), tanggal:tanggal, kepada:umum.kepada, alamat1:umum.alamat1, alamat2:umum.alamat2,
+      keterangan:umum.keterangan, ppn:umum.ppn, noPO:w.noPO, tglPO:w.tglPO, jatuhTempo:w.jatuhTempo, items:w.items, potongan:w.potongan};
+  }
+  function dataFor(k){ var s=kode; kode=k; var d=dataNow(); kode=s; return d; }
+
+  /* ---------- kode ---------- */
+  function drawKode(){
+    var box=$('kode'); box.innerHTML='';
+    [1,2,3,4].forEach(function(k){
+      var c=G.hitung(dataFor(k)), b=mk('button',k===kode?'on':'',{type:'button'});
+      b.innerHTML='<b>Kode '+k+'</b><span>'+(c.rows.length?'Rp '+G.rp(c.total):'Kosong')+'</span>';
+      b.addEventListener('click',function(){ kode=k; drawAll(); });
+      box.appendChild(b);
+    });
+  }
+
+  /* ---------- data invoice ---------- */
+  var elTgl, elNo, elPO, elTPO, elJT;
+  function drawData(){
+    var w=work[kode], box=$('data'); box.innerHTML='';
+    elTgl=mk('input',null,{type:'date'}); elTgl.value=tanggal;
+    elNo=mk('input',null,{inputmode:'numeric'}); elNo.value=w.noManual||auto();
+    elPO=mk('input',null,{placeholder:'cth. 467/PPK.10/DIRI-BRIN/PO/9/2026'}); elPO.value=w.noPO||'';
+    elTPO=mk('input',null,{type:'date'}); elTPO.value=w.tglPO||'';
+    elJT=mk('input',null,{type:'date'}); elJT.value=w.jatuhTempo||'';
+    elTgl.addEventListener('input',function(){ tanggal=elTgl.value; if(!work[kode].noManual) elNo.value=auto(); drawKode(); });
+    elNo.addEventListener('input',function(){ var v=elNo.value.replace(/\D/g,''); elNo.value=v; work[kode].noManual = (v===auto()?'':v); });
+    elPO.addEventListener('input',function(){ work[kode].noPO=elPO.value; });
+    elTPO.addEventListener('input',function(){
+      work[kode].tglPO=elTPO.value;
+      if(!work[kode].jtManual){ work[kode].jatuhTempo=G.addMonths(elTPO.value,1); elJT.value=work[kode].jatuhTempo; }
+    });
+    elJT.addEventListener('input',function(){ work[kode].jtManual=true; work[kode].jatuhTempo=elJT.value; });
+    var g1=mk('div','g2'); g1.appendChild(lab('Tanggal invoice',elTgl)); g1.appendChild(lab('Nomor invoice',elNo));
+    var g2=mk('div','g1'); g2.appendChild(lab('Kode PO',elPO));
+    var g3=mk('div','g2'); g3.appendChild(lab('Tanggal PO',elTPO)); g3.appendChild(lab('Jatuh tempo',elJT));
+    box.appendChild(g1); box.appendChild(g2); box.appendChild(g3);
+  }
+
+  /* ---------- barang ---------- */
+  var totEls=[];
+  function drawItems(){
+    var w=work[kode], box=$('items'); box.innerHTML=''; totEls=[];
+    w.items.forEach(function(row,i){
+      var r=mk('div','it'), n=mk('span','n'); n.textContent=i+1;
+      var nama=mk('input','nama',{placeholder:'Nama barang',list:'dl',autocomplete:'off'}); nama.value=row.nama;
+      var qty=mk('input','qty r',{inputmode:'numeric',placeholder:''}); qty.value=row.qty?G.rp(G.num(row.qty)):'';
+      var harga=mk('input','harga r',{inputmode:'numeric'}); harga.value=row.harga?G.rp(G.num(row.harga)):'';
+      var tot=mk('span','tot'); totEls.push(tot);
+      var x=mk('button','x',{type:'button','aria-label':'Kosongkan baris '+(i+1)}); x.textContent='×';
+      nama.addEventListener('input',function(){ row.nama=nama.value; if(row.nama && !row.qty){ row.qty='1'; qty.value='1'; } refresh(); });
+      nama.addEventListener('change',function(){
+        var h=hist[nama.value.trim()];
+        if(h && !G.num(row.harga)){ row.harga=String(h.harga); harga.value=G.rp(h.harga); refresh(); }
+      });
+      qty.addEventListener('input',function(){ row.qty=money(qty); refresh(); });
+      harga.addEventListener('input',function(){ row.harga=money(harga); refresh(); });
+      x.addEventListener('click',function(){ row.nama=''; row.qty=''; row.harga=''; nama.value=''; qty.value=''; harga.value=''; refresh(); });
+      [n,nama,qty,harga,tot,x].forEach(function(e){ r.appendChild(e); });
+      box.appendChild(r);
+    });
+    var pot=$('pot'); pot.value=w.potongan?G.rp(G.num(w.potongan)):'';
+  }
+  $('pot').addEventListener('input',function(){ work[kode].potongan=money($('pot')); refresh(); });
+
+  /* ---------- ringkasan ---------- */
+  function refresh(){
+    var d=dataNow(), c=G.hitung(d), w=work[kode];
+    w.items.forEach(function(row,i){ if(totEls[i]) totEls[i].textContent = G.num(row.qty)*G.num(row.harga) ? G.rp(G.num(row.qty)*G.num(row.harga)) : '-'; });
+    $('sSub').textContent='Rp '+G.rp(c.sub); $('sPpnL').textContent='PPN '+String(c.pct).replace('.',',')+'%';
+    $('sPpn').textContent='Rp '+G.rp(c.ppn); $('sTot').textContent='Rp '+G.rp(c.total);
+    $('sTb').textContent = c.rows.length ? 'Terbilang: '+G.terbilang(c.total) : '';
+    drawKodeLight();
+  }
+  function drawKodeLight(){
+    var bs=$('kode').children;
+    [1,2,3,4].forEach(function(k,i){ var c=G.hitung(dataFor(k)); bs[i].lastChild.textContent = c.rows.length?'Rp '+G.rp(c.total):'Kosong'; });
+  }
+  function drawAll(){ drawKode(); drawData(); drawItems(); refresh(); }
+
+  /* ---------- pengaturan umum ---------- */
+  ['kepada','alamat1','alamat2','keterangan','ppn'].forEach(function(k){
+    var el=$('u_'+k); el.value=umum[k];
+    el.addEventListener('input',function(){ umum[k]=el.value; lsSet(K_UMUM,umum); refresh(); });
+  });
+
+  /* ---------- tombol ---------- */
+  function datalist(){
+    var names={}; Object.keys(hist).forEach(function(n){names[n]=1;});
+    [1,2,3,4].forEach(function(k){ base(k).items.forEach(function(r){ if(r.nama){ names[r.nama]=1; if(!hist[r.nama]) hist[r.nama]={harga:G.num(r.harga)}; } }); });
+    var dl=$('dl'); dl.innerHTML=''; Object.keys(names).forEach(function(n){ var o=mk('option'); o.value=n; dl.appendChild(o); });
+  }
+  function fileName(){ return 'Invoice '+dataNow().noInvoice+'.docx'; }
+  function saveBlob(blob,name){ var a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name; document.body.appendChild(a); a.click(); setTimeout(function(){URL.revokeObjectURL(a.href); a.remove();},4000); }
+  async function bikin(){
+    var d=dataNow(); if(!d.tanggal) throw new Error('Isi tanggal invoice.'); if(!d.noInvoice) throw new Error('Nomor invoice kosong.');
+    var blob=await G.buildInvoice(d);
+    work[kode].items.forEach(function(r){ var n=(r.nama||'').trim(), h=G.num(r.harga); if(n&&h) hist[n]={harga:h}; }); lsSet(K_HIST,hist); datalist();
+    return blob;
+  }
+  $('bDl').addEventListener('click',async function(){ try{ var b=await bikin(); saveBlob(b,fileName()); toast('Tersimpan: '+fileName()); }catch(e){ toast(e.message||String(e),true); } });
+  if(navigator.canShare){ $('bShare').hidden=false; $('bShare').addEventListener('click',async function(){
+    try{ var b=await bikin(), f=new File([b],fileName(),{type:G.MIME});
+      if(navigator.canShare({files:[f]})) await navigator.share({files:[f],title:fileName()}); else saveBlob(b,fileName());
+    }catch(e){ if(e&&e.name!=='AbortError') toast(e.message||String(e),true); } }); }
+  $('bSave').addEventListener('click',function(){
+    var w=clone(work[kode]); w.noManual=''; saved[kode]=w; lsSet(K_SAVED,saved); datalist(); toast('Disimpan sebagai bawaan Kode '+kode);
+  });
+  $('bReset').addEventListener('click',function(){
+    if(!confirm('Kembalikan Kode '+kode+' ke bawaan awal (data dari template asli)? Bawaan yang pernah Anda simpan untuk kode ini ikut dihapus.')) return;
+    delete saved[kode]; lsSet(K_SAVED,saved); work[kode]=norm(FACTORY[kode]); drawAll(); toast('Kode '+kode+' dikembalikan ke bawaan awal');
+  });
+
+  datalist(); drawAll();
+  window.__t={work:work,setKode:function(k){kode=k;drawAll();}};
+})();
+</script>
+</body>
+</html>
